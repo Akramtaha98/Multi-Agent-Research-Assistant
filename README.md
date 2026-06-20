@@ -10,7 +10,9 @@ Built as a portfolio project demonstrating LangGraph, agentic workflows, and RAG
 
 ## Demo
 
-![Multi-Agent Research Assistant Demo](assets/demo.gif)
+<p align="center">
+  <img src="assets/demo.gif" alt="Multi-Agent Research Assistant Demo" width="100%" />
+</p>
 
 ---
 
