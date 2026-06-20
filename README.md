@@ -4,8 +4,6 @@ A production-quality agentic AI system that takes a research question and produc
 
 Built as a portfolio project demonstrating LangGraph, agentic workflows, and RAG — targeting AI/LLM Engineer roles.
 
-> **Live demo:** *(add HuggingFace Spaces link after deployment)*
-
 ---
 
 ## Demo
@@ -65,11 +63,14 @@ Streamlit UI renders live agent steps → final report + sources
 | Layer | Technology |
 |---|---|
 | Agent orchestration | **LangGraph** (StateGraph) |
-| LLM | **Claude Sonnet** via `langchain-anthropic` |
+| LLM | **Groq** (Llama 3) — pluggable, also supports Claude via `LLM_PROVIDER` |
 | Academic search | **arXiv API** (`arxiv` Python package) |
 | Backend | **FastAPI** + SSE streaming |
 | Frontend | **Streamlit** |
-| Deployment | **Hugging Face Spaces** (Streamlit SDK) |
+
+The LLM provider is selected at runtime via the `LLM_PROVIDER` env var (`groq` or `anthropic`).
+Tiered models keep it fast: a lightweight model for the Orchestrator, and a stronger model
+for the Analysis and Writer agents.
 
 ---
 
@@ -77,7 +78,7 @@ Streamlit UI renders live agent steps → final report + sources
 
 ### Prerequisites
 - Python 3.11+
-- Anthropic API key ([get one here](https://console.anthropic.com))
+- A **Groq API key** (free — [get one here](https://console.groq.com/keys)) or an Anthropic API key
 
 ### Local development
 
@@ -95,7 +96,10 @@ pip install -r requirements.txt
 
 # 4. Add your API key
 cp .env.example .env
-# Edit .env and add: ANTHROPIC_API_KEY=sk-ant-...
+# Edit .env:
+#   LLM_PROVIDER=groq
+#   GROQ_API_KEY=gsk_...
+# (or set LLM_PROVIDER=anthropic and ANTHROPIC_API_KEY=sk-ant-...)
 
 # 5. (Optional) Smoke-test the pipeline before starting servers
 python test_pipeline.py
@@ -123,17 +127,6 @@ make ui      # Streamlit on http://localhost:8501
                     transfer, retrieval quality. Found 1 contradiction.
 ✍️  Writer Agent  → Compiled 520-word report with 14 cited sources
 ```
-
-*(Add a screenshot here after first run)*
-
----
-
-## Deployment — Hugging Face Spaces
-
-1. Create a new Space on [huggingface.co/spaces](https://huggingface.co/spaces) with **Streamlit** SDK
-2. Push this repo to the Space's git remote
-3. In the Space **Settings → Secrets**, add `ANTHROPIC_API_KEY`
-4. HF Spaces runs `app.py` — which starts FastAPI on port 8000 and Streamlit on port 7860
 
 ---
 
