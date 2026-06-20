@@ -1,43 +1,50 @@
 """
-Search Agent — queries arXiv for each sub-query and returns structured paper results.
+Search Agent — queries arXiv for each sub-query in parallel and returns structured paper results.
 """
 
 import arxiv
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from graph.state import ResearchState, AgentTraceEntry
 
 
 MAX_RESULTS_PER_QUERY = 5
 
 
-def search_node(state: ResearchState) -> dict:
+def _fetch_query(sub_query: str) -> list[dict]:
     client = arxiv.Client()
-    all_results: list[dict] = []
-    seen_ids: set[str] = set()
-
-    for sub_query in state["sub_queries"]:
-        search = arxiv.Search(
-            query=sub_query,
-            max_results=MAX_RESULTS_PER_QUERY,
-            sort_by=arxiv.SortCriterion.Relevance,
+    search = arxiv.Search(
+        query=sub_query,
+        max_results=MAX_RESULTS_PER_QUERY,
+        sort_by=arxiv.SortCriterion.Relevance,
+    )
+    results = []
+    for paper in client.results(search):
+        results.append(
+            {
+                "id": paper.entry_id.split("/")[-1],
+                "title": paper.title,
+                "authors": [a.name for a in paper.authors[:3]],
+                "abstract": paper.summary.replace("\n", " "),
+                "url": paper.entry_id,
+                "published": paper.published.strftime("%Y-%m-%d") if paper.published else "unknown",
+                "sub_query": sub_query,
+            }
         )
+    return results
 
-        for paper in client.results(search):
-            arxiv_id = paper.entry_id.split("/")[-1]
-            if arxiv_id in seen_ids:
-                continue
-            seen_ids.add(arxiv_id)
 
-            all_results.append(
-                {
-                    "id": arxiv_id,
-                    "title": paper.title,
-                    "authors": [a.name for a in paper.authors[:3]],
-                    "abstract": paper.summary.replace("\n", " "),
-                    "url": paper.entry_id,
-                    "published": paper.published.strftime("%Y-%m-%d") if paper.published else "unknown",
-                    "sub_query": sub_query,
-                }
-            )
+def search_node(state: ResearchState) -> dict:
+    seen_ids: set[str] = set()
+    all_results: list[dict] = []
+
+    # Run all sub-queries in parallel
+    with ThreadPoolExecutor(max_workers=len(state["sub_queries"])) as executor:
+        futures = {executor.submit(_fetch_query, q): q for q in state["sub_queries"]}
+        for future in as_completed(futures):
+            for paper in future.result():
+                if paper["id"] not in seen_ids:
+                    seen_ids.add(paper["id"])
+                    all_results.append(paper)
 
     if not all_results:
         return {
@@ -62,7 +69,6 @@ def search_node(state: ResearchState) -> dict:
         },
     }
 
-    # Sources list is the clean citation-ready version
     sources = [
         {
             "id": r["id"],

@@ -47,7 +47,7 @@ def analysis_node(state: ResearchState) -> dict:
     if state.get("error"):
         return {}
 
-    llm = get_llm(temperature=0, max_tokens=4096)
+    llm = get_llm(temperature=0, max_tokens=4096, speed="smart")
 
     # Build a compact representation of all papers to fit context
     papers_text = ""
@@ -57,7 +57,7 @@ def analysis_node(state: ResearchState) -> dict:
             f"\n[{i}] ID: {paper['id']}\n"
             f"Title: {paper['title']}\n"
             f"Authors: {authors} ({paper['published']})\n"
-            f"Abstract: {paper['abstract'][:600]}...\n"
+            f"Abstract: {paper['abstract'][:300]}...\n"
         )
 
     messages = [

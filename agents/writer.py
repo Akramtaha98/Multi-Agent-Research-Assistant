@@ -55,7 +55,7 @@ def writer_node(state: ResearchState) -> dict:
             ],
         }
 
-    llm = get_llm(temperature=0.3, max_tokens=4096)
+    llm = get_llm(temperature=0.3, max_tokens=2048, speed="smart")
 
     # Build sources reference for the writer
     sources_text = ""
@@ -63,7 +63,7 @@ def writer_node(state: ResearchState) -> dict:
         authors = ", ".join(src["authors"])
         sources_text += f"[{i}] {src['title']} — {authors} ({src['published']}) — {src['url']}\n"
 
-    analysis_json = json.dumps(state["analysis"], indent=2)
+    analysis_json = json.dumps(state["analysis"], separators=(",", ":"))
 
     messages = [
         SystemMessage(content=WRITER_SYSTEM),

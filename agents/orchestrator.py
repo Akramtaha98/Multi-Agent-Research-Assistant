@@ -21,7 +21,7 @@ Rules:
 
 
 def orchestrator_node(state: ResearchState) -> dict:
-    llm = get_llm(temperature=0)
+    llm = get_llm(temperature=0, speed="fast")
 
     messages = [
         SystemMessage(content=ORCHESTRATOR_SYSTEM),

@@ -45,7 +45,7 @@ st.markdown(
 # ── Header ────────────────────────────────────────────────────────────────────
 st.title("🔬 Multi-Agent Research Assistant")
 st.caption(
-    "Powered by **LangGraph** · **Claude Sonnet** · **arXiv** — "
+    "Powered by **LangGraph** · **Groq + Llama 3** · **arXiv** — "
     "watches live as each agent thinks"
 )
 st.divider()
